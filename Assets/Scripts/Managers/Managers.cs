@@ -5,8 +5,11 @@ using UnityEngine;
 public class Managers : MonoBehaviour
 {
     static Managers s_instance; // 유일성 보장
-    public static Managers Instance { get { Init(); return s_instance; } } // 유일한 매니저를 갖고 온다.
-    // Start is called before the first frame update
+    static Managers Instance { get { Init(); return s_instance; } } // 유일한 매니저를 갖고 온다.
+    
+    InputManager _input = new InputManager();
+    public static InputManager Input { get { return Instance._input; } }
+
     void Start()
     {
         Init();
@@ -14,7 +17,7 @@ public class Managers : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        _input.OnUpdate();
     }
 
     static void Init()
