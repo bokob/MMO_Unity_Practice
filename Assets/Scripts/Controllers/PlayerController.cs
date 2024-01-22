@@ -1,5 +1,4 @@
-using JetBrains.Annotations;
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,86 +7,89 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     float _speed = 10.0f;
 
-    Vector3 _destPos;
+	Vector3 _destPos;
 
     void Start()
     {
-        Managers.Input.MouseAction -= OnMouseClicked;
-        Managers.Input.MouseAction += OnMouseClicked;
+		Managers.Input.MouseAction -= OnMouseClicked;
+		Managers.Input.MouseAction += OnMouseClicked;
 
-        Managers.Resource.Instantiate("Ui/UI_Button");
-    }
+		// TEMP
+		Managers.UI.ShowSceneUI<UI_Inven>();
+	}
 
-    public enum PlayerState
+	public enum PlayerState
+	{
+		Die,
+		Moving,
+		Idle,
+	}
+
+	PlayerState _state = PlayerState.Idle;
+
+	void UpdateDie()
+	{
+		// ì•„ë¬´ê²ƒë„ ëª»í•¨
+
+	}
+
+	void UpdateMoving()
+	{
+		Vector3 dir = _destPos - transform.position;
+		if (dir.magnitude < 0.0001f)
+		{
+			_state = PlayerState.Idle;
+		}
+		else
+		{
+			float moveDist = Mathf.Clamp(_speed * Time.deltaTime, 0, dir.magnitude);
+			transform.position += dir.normalized * moveDist;
+			transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), 20 * Time.deltaTime);
+		}
+
+		// ì• ë‹ˆë©”ì´ì…˜
+		Animator anim = GetComponent<Animator>();
+		// í˜„ì¬ ê²Œì„ ìƒíƒœì— ëŒ€í•œ ì •ë³´ë¥¼ ë„˜ê²¨ì¤€ë‹¤
+		anim.SetFloat("speed", _speed);
+	}
+
+	void UpdateIdle()
+	{
+		// ì• ë‹ˆë©”ì´ì…˜
+		Animator anim = GetComponent<Animator>();
+
+		anim.SetFloat("speed", 0);
+	}
+
+	void Update()
     {
-        Die,
-        Moving,
-        Idle,
-    }
-    PlayerState _state = PlayerState.Idle;
+		switch (_state)
+		{
+			case PlayerState.Die:
+				UpdateDie();
+				break;
+			case PlayerState.Moving:
+				UpdateMoving();
+				break;
+			case PlayerState.Idle:
+				UpdateIdle();
+				break;
+		}
+	}
 
-    void UpdateDie()
-    {
-        // ¾Æ¹«°Íµµ ¸øÇÔ
-    }
+	void OnMouseClicked(Define.MouseEvent evt)
+	{
+		if (_state == PlayerState.Die)
+			return;
 
-    void UpdateMoving()
-    {
-        Vector3 dir = _destPos - transform.position; // ¹æÇâº¤ÅÍ »Ì±â <- »ç½Ç Å©±âµµ ÀÖÀ½ (ÇÔÁ¤)
-        if (dir.magnitude < 0.0001f) // µµÂø, floatÀÌ¶ó Á¤È®ÇÏ°Ô 0ÀÌ ³ª¿ÀÁö ¾Ê´Â °æ¿ì°¡ ¸¹´Ù.
-        {
-            _state = PlayerState.Idle;
-        }
-        else
-        {
-            float moveDist = Mathf.Clamp(_speed * Time.deltaTime, 0, dir.magnitude);
-            transform.position += dir.normalized * moveDist; // ÀÌµ¿
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), 20 * Time.deltaTime);
-        }
+		Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+		Debug.DrawRay(Camera.main.transform.position, ray.direction * 100.0f, Color.red, 1.0f);
 
-        // ¾Ö´Ï¸ŞÀÌ¼Ç
-        Animator anim = GetComponent<Animator>();
-        // ÇöÀç °ÔÀÓ »óÅÂ¿¡ ´ëÇÑ Á¤º¸¸¦ ³Ñ°ÜÁØ´Ù.
-        anim.SetFloat("speed", _speed);
-    }
-
-    void UpdateIdle()
-    {
-        // ¾Ö´Ï¸ŞÀÌ¼Ç
-        Animator anim = GetComponent<Animator>();
-        anim.SetFloat("speed", 0);
-    }
-    void Update()
-    {
-
-        switch(_state)
-        {
-            case PlayerState.Die:
-                UpdateDie();
-                break;
-            case PlayerState.Moving:
-                UpdateMoving();
-                break;
-            case PlayerState.Idle:
-                UpdateIdle();
-                break;
-
-        }
-    }
-
-    void OnMouseClicked(Define.MouseEvent evt)
-    {
-        if (_state == PlayerState.Die)
-            return;
-
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        Debug.DrawRay(Camera.main.transform.position, ray.direction * 100.0f, Color.red, 1.0f);
-
-        RaycastHit hit;
-        if (Physics.Raycast(ray, out hit, 100.0f, LayerMask.GetMask("Wall")))
-        {
-            _destPos = hit.point;
-            _state = PlayerState.Moving;
-        }
-    }
+		RaycastHit hit;
+		if (Physics.Raycast(ray, out hit, 100.0f, LayerMask.GetMask("Wall")))
+		{
+			_destPos = hit.point;
+			_state = PlayerState.Moving;
+		}
+	}
 }
