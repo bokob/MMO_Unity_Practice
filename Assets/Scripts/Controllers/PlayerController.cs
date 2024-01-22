@@ -32,8 +32,19 @@ public class PlayerController : MonoBehaviour
             {
                 float moveDist = Mathf.Clamp(_speed * Time.deltaTime, 0, dir.magnitude);
                 transform.position += dir.normalized * moveDist; // 이동
-                transform.LookAt(_destPos); // 목적지 바라본다.
+                transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), 20 * Time.deltaTime);
             }
+        }
+
+        if(_moveToDest)
+        {
+            Animator anim = GetComponent<Animator>();
+            anim.Play("RUN");
+        }
+        else
+        {
+            Animator anim = GetComponent<Animator>();
+            anim.Play("WAIT");
         }
     }
 
@@ -65,9 +76,6 @@ public class PlayerController : MonoBehaviour
 
     void OnMouseClicked(Define.MouseEvent evt)
     {
-        if (evt != Define.MouseEvent.Click)
-            return;
-
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         Debug.DrawRay(Camera.main.transform.position, ray.direction * 100.0f, Color.red, 1.0f);
 

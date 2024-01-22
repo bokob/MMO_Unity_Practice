@@ -22,8 +22,19 @@ public class CameraController : MonoBehaviour
     {
         if(_mode == Define.CameraMode.QuaterView)
         {
-            transform.position = _player.transform.position + _delta;
-            transform.LookAt(_player.transform);
+            RaycastHit hit;
+            if(Physics.Raycast(_player.transform.position, _delta, out hit, _delta.magnitude, LayerMask.GetMask("Wall")))
+            {
+                // 플레이와 벽 사이로 이동
+
+                float dist = (hit.point - _player.transform.position).magnitude * 0.8f; // 방향 벡터의 크기에 0.8 곱한다.
+                transform.position = _player.transform.position + _delta.normalized * dist;
+            }
+            else
+            {
+                transform.position = _player.transform.position + _delta;
+                transform.LookAt(_player.transform);
+            }
         }
     }
 
