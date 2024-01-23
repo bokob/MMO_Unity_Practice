@@ -40,5 +40,4 @@ public class InputManager
         KeyAction = null;
         MouseAction = null;
     }
-
 }
