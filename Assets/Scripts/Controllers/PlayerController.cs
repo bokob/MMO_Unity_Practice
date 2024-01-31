@@ -69,11 +69,11 @@ public class PlayerController : BaseController
 
     void OnHitEvent()
     {
-        Stat targetStat = _lockTarget.GetComponent<Stat>();
-        PlayerStat myStat = gameObject.GetComponent<PlayerStat>();
-        int damage = Mathf.Max(0, myStat.Attack - targetStat.Defence);
-        targetStat.Hp -= damage;
-
+        if (_lockTarget != null)
+        {
+            Stat targetStat = _lockTarget.GetComponent<Stat>();
+            targetStat.OnAttacked(_stat);
+        }
         // TODO
         if (_stopSkill)
         {
